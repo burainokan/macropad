@@ -348,11 +348,15 @@ function macMap(){
   m[4]={t:'combo',k:['LEFT_SHIFT','NINE']};
   m[5]={t:'combo',k:['LEFT_SHIFT','ZERO']};
   m[6]={t:'key',c:'HAT'};
-  m[11]={t:'key',c:'LANG2'};                        /* 英数 */
+  /* KEY 11: 1回押し=英数 / 2回連続押し=かな */
+  m[11]={t:'tap', window:0.2, taps:[
+    {t:'key',c:'LANG2'},
+    {t:'key',c:'LANG1'},
+  ]};
   m[15]={t:'combo',k:['LEFT_SHIFT','EIGHT']};
   m[23]={t:'key',c:'MINUS'};
   m[25]={t:'combo',k:['LEFT_GUI','LEFT_SHIFT','FOUR']};
-  m[27]={t:'key',c:'LANG1'};                        /* かな */
+  m[27]={t:'mod',c:'LEFT_GUI'};                     /* 空いたので GUI に戻す */
   m[31]={t:'combo',k:['LEFT_SHIFT','HAT']};
   return m;
 }
@@ -421,6 +425,17 @@ function actLabel(a){
     const mods = ks.filter(k=>MODS.includes(k)).map(k=>MODSHORT[k]||k[0]).join('');
     const base = ks.filter(k=>!MODS.includes(k)).map(short).join('+');
     return {lbl: base || mods, sub: base ? mods : 'MOD', on:true};
+  }
+  if (a.t==='tap'){
+    const ts = a.taps || [];
+    const lbl = ts.map(x=>{
+      if (!x) return '—';
+      if (x.t==='key'||x.t==='mod') return short(x.c);
+      if (x.t==='combo') return (x.k||[]).filter(k=>!MODS.includes(k)).map(short).join('+') || 'MOD';
+      if (x.t==='text') return '"'+x.s+'"';
+      return '?';
+    }).join('/');
+    return {lbl, sub:'TAP×'+ts.length, on:true};
   }
   return {lbl:'—', sub:'', on:false};
 }
@@ -530,7 +545,7 @@ function renderEditor(){
 
   const typeOpts = [
     ['none','無割当'],['key','単キー'],['mod','押しっぱなし修飾'],
-    ['combo','同時押し'],['text','文字列'],
+    ['combo','同時押し'],['text','文字列'],['tap','タップダンス'],
   ].map(([v,l])=>`<option value="${v}"${t===v?' selected':''}>${l}</option>`).join('');
 
   let body = '';
@@ -556,6 +571,23 @@ function renderEditor(){
       <span class="cap-lbl">文字列</span>
       <input type="text" id="txt" value="${(a.s||'').replace(/"/g,'&quot;')}">
       <div class="hint">数字・ピリオド・マイナスのみ送出されます（JIS配列前提）</div></div>`;
+  } else if (t==='tap'){
+    const ts = a.taps || [];
+    const win = a.window ?? 0.2;
+    body = ts.map((x,n)=>`
+      <div class="field">
+        <span class="cap-lbl">${n+1}回押し</span>
+        ${keySelect(x && (x.t==='key'||x.t==='mod') ? x.c : '', 'tap'+n)}
+      </div>`).join('') + `
+      <div class="combo-row" style="margin-bottom:11px">
+        <button class="mod-chip" data-tapadd="1">＋ 段を増やす</button>
+        ${ts.length>2 ? '<button class="mod-chip" data-tapdel="1">− 減らす</button>' : ''}
+      </div>
+      <div class="field">
+        <span class="cap-lbl">判定窓 (秒)</span>
+        <input type="text" id="tapwin" value="${win}">
+        <div class="hint">1回押しは必ずこの秒数だけ遅れます。判定に2回目を待つ必要があるためです。短くすると遅延は減りますが、2回押しの取りこぼしが増えます。</div>
+      </div>`;
   }
 
   ed.innerHTML = `
@@ -575,8 +607,47 @@ function renderEditor(){
     else if (nt==='mod')  na = {t:'mod', c:'LEFT_SHIFT'};
     else if (nt==='combo')na = {t:'combo', k:['LEFT_CONTROL','C']};
     else if (nt==='text') na = {t:'text', s:''};
+    else if (nt==='tap')  na = {t:'tap', window:0.2, taps:[
+      {t:'key', c:'LANG2'}, {t:'key', c:'LANG1'}]};
     profiles[pi].keymap[sel] = na;
     save(); renderMatrix(); renderEditor();
+  };
+
+  /* --- タップダンス --- */
+  ed.querySelectorAll('select[data-role^=tap]').forEach(s=>{
+    s.onchange = ()=>{
+      const n = +s.dataset.role.slice(3);
+      const a2 = profiles[pi].keymap[sel];
+      a2.taps[n] = s.value ? {t:'key', c:s.value} : null;
+      save(); renderMatrix(); renderEditor();
+    };
+  });
+  const tadd = ed.querySelector('[data-tapadd]');
+  if (tadd) tadd.onclick = ()=>{
+    const a2 = profiles[pi].keymap[sel];
+    if (a2.taps.length >= 4){
+      note('タップ段数は4回までにしてください。それ以上は実用的に叩き分けられません。', 'err');
+      return;
+    }
+    a2.taps.push({t:'key', c:'ESCAPE'});
+    save(); renderMatrix(); renderEditor();
+  };
+  const tdel = ed.querySelector('[data-tapdel]');
+  if (tdel) tdel.onclick = ()=>{
+    const a2 = profiles[pi].keymap[sel];
+    if (a2.taps.length > 2) a2.taps.pop();
+    save(); renderMatrix(); renderEditor();
+  };
+  const tw = $('tapwin');
+  if (tw) tw.onchange = ()=>{
+    const v = parseFloat(tw.value);
+    if (!isNaN(v) && v >= 0.05 && v <= 1.0){
+      profiles[pi].keymap[sel].window = v;
+      save();
+    } else {
+      note('判定窓は 0.05 〜 1.0 秒の範囲で指定してください。', 'err');
+      renderEditor();
+    }
   };
 
   const cs = ed.querySelector('select[data-role=code]');
@@ -860,9 +931,17 @@ $('file').onchange = e=>{
 /* ---------- boot ---------- */
 if (!HAS_SERIAL){
   $('connect').disabled = true;
-  setStat('シリアル非対応', 'err');
-  note('このブラウザは Web Serial に対応していません。<b>Chrome</b> か <b>Edge</b> で、<b>https</b> または <b>localhost</b> から開いてください。'
-     + '（Firefox は非対応。<b>file://</b> でも使えません。）ここでは編集と書き出しのみ行えます。', 'err');
+  const isFile = location.protocol === 'file:';
+  setStat(isFile ? 'ファイル モード' : 'シリアル非対応', '');
+  if (isFile){
+    note('<b>ファイルから開いています。</b>ここでは接続できません（ブラウザはローカルファイルにシリアル通信を許可しません）。'
+       + 'このまま編集して、<b>書き出す</b> → できた <b>macropad-config.json</b> を CIRCUITPY ドライブに置く → '
+       + 'Pico のリセットボタン、で反映されます。'
+       + '<br>差した瞬間に反映させたい場合は、この HTML を https のURLに置いて Chrome で開いてください。');
+  } else {
+    note('このブラウザは Web Serial に対応していません。<b>Chrome</b> か <b>Edge</b> をお使いください。'
+       + 'ここでは編集と書き出しのみ行えます。', 'err');
+  }
 }
 renderAll();
 </script>
