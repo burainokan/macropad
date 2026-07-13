@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Macropad Keymap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#0E1113;
+  --panel:#171B1F;
+  --cap:#232930;
+  --cap-hi:#2C343C;
+  --rule:#2E353D;
+  --phos:#5CE1D2;
+  --amber:#E8A33D;
+  --dim:#6B7780;
+  --text:#C8D0D6;
+  --red:#E2564B;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--ground);
+  color:var(--text);
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:13px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible{
+  outline:2px solid var(--phos);outline-offset:2px
+}
+
+/* ---------- shell ---------- */
+.shell{max-width:1180px;margin:0 auto;padding:28px 24px 80px}
+
+header{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  gap:24px;flex-wrap:wrap;
+  padding-bottom:18px;margin-bottom:24px;
+  border-bottom:1px solid var(--rule);
+}
+.brand{display:flex;align-items:baseline;gap:14px}
+.brand h1{font-size:18px;font-weight:700;letter-spacing:.06em}
+.brand .spec{color:var(--dim);font-size:11px;letter-spacing:.1em}
+
+.link{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap
+}
+.status{
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;letter-spacing:.08em;color:var(--dim)
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--rule);flex:none}
+.dot.live{background:var(--phos);box-shadow:0 0 8px var(--phos)}
+.dot.err{background:var(--red)}
+
+.btn{
+  padding:7px 15px;border:1px solid var(--rule);border-radius:2px;
+  font-size:11px;letter-spacing:.09em;color:var(--text);
+  transition:border-color .12s,color .12s,background .12s;
+}
+.btn:hover{border-color:var(--phos);color:var(--phos)}
+.btn.primary{border-color:var(--phos);color:var(--phos)}
+.btn.primary:hover{background:var(--phos);color:var(--ground)}
+.btn.warn:hover{border-color:var(--red);color:var(--red)}
+.btn:disabled{opacity:.32;cursor:not-allowed;border-color:var(--rule);color:var(--dim)}
+
+/* ---------- warning ---------- */
+.notice{
+  border:1px solid var(--rule);border-left:2px solid var(--amber);
+  background:var(--panel);padding:12px 16px;margin-bottom:22px;
+  font-size:12px;color:var(--dim);
+}
+.notice b{color:var(--amber);font-weight:500}
+
+/* ---------- profile bar ---------- */
+.profiles{display:flex;gap:0;margin-bottom:22px;border:1px solid var(--rule);width:fit-content;max-width:100%;overflow-x:auto}
+.ptab{
+  padding:9px 20px;font-size:11px;letter-spacing:.1em;color:var(--dim);
+  border-right:1px solid var(--rule);white-space:nowrap;
+  transition:color .12s,background .12s;
+}
+.ptab:last-child{border-right:none}
+.ptab:hover{color:var(--text);background:var(--panel)}
+.ptab.on{background:var(--phos);color:var(--ground);font-weight:700}
+
+/* ---------- main grid ---------- */
+.main{display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start}
+@media(max-width:900px){.main{grid-template-columns:1fr}}
+
+.section-label{
+  font-size:10px;letter-spacing:.16em;color:var(--dim);
+  margin-bottom:12px;display:flex;align-items:center;gap:10px;
+}
+.section-label::after{content:'';flex:1;height:1px;background:var(--rule)}
+
+/* ---------- matrix ---------- */
+.matrix{
+  display:grid;grid-template-columns:repeat(8,1fr);gap:5px;
+  margin-bottom:30px;
+}
+.cap{
+  aspect-ratio:1;
+  background:var(--cap);
+  border:1px solid var(--rule);
+  border-radius:3px;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:3px;gap:2px;
+  position:relative;
+  transition:background .1s,border-color .1s,transform .06s;
+}
+.cap:hover{background:var(--cap-hi);border-color:var(--dim)}
+.cap:active{transform:translateY(1px)}
+.cap.on{border-color:var(--phos);background:#1C2A2A}
+.cap.on .lbl{color:var(--phos)}
+.cap.sel{border-color:var(--phos);box-shadow:inset 0 0 0 1px var(--phos)}
+.cap .idx{
+  position:absolute;top:3px;left:4px;
+  font-size:8px;color:var(--rule);line-height:1;
+}
+.cap.on .idx{color:#31534F}
+.cap .lbl{
+  font-size:10px;color:var(--dim);text-align:center;
+  word-break:break-all;line-height:1.15;font-weight:500;
+}
+.cap .sub{font-size:8px;color:var(--rule);letter-spacing:.05em}
+
+/* ---------- encoders ---------- */
+.encs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:640px){.encs{grid-template-columns:1fr}}
+.enc{
+  border:1px solid var(--rule);background:var(--panel);
+  padding:13px 14px;
+}
+.enc .head{
+  display:flex;align-items:center;gap:8px;margin-bottom:10px;
+}
+.knob{
+  width:14px;height:14px;border-radius:50%;
+  border:1px solid var(--amber);position:relative;flex:none;
+}
+.knob::after{
+  content:'';position:absolute;top:1px;left:50%;
+  width:1px;height:4px;background:var(--amber);transform:translateX(-50%);
+}
+.enc .name{font-size:11px;letter-spacing:.1em;color:var(--amber)}
+select{
+  width:100%;background:var(--cap);color:var(--text);
+  border:1px solid var(--rule);border-radius:2px;
+  padding:6px 8px;font-family:inherit;font-size:11px;
+}
+.enc .opt{margin-top:9px;display:none}
+.enc .opt.show{display:block}
+.enc label{
+  display:flex;align-items:center;gap:7px;
+  font-size:10px;color:var(--dim);letter-spacing:.05em;cursor:pointer;
+}
+input[type=checkbox]{accent-color:var(--phos);width:13px;height:13px}
+input[type=text]{
+  width:100%;background:var(--cap);color:var(--text);
+  border:1px solid var(--rule);border-radius:2px;
+  padding:6px 8px;font-family:inherit;font-size:10px;margin-top:5px;
+}
+
+/* ---------- side ---------- */
+.side{display:flex;flex-direction:column;gap:26px;position:sticky;top:28px}
+
+/* OLED preview — the signature */
+.oled-shell{
+  background:#0A0C0D;border:1px solid var(--rule);
+  padding:14px;
+}
+.oled-cap{
+  font-size:9px;letter-spacing:.14em;color:var(--rule);
+  margin-bottom:9px;
+}
+canvas{
+  width:100%;image-rendering:pixelated;
+  background:#000;display:block;
+  border:1px solid #1A1E21;
+}
+
+.editor{border:1px solid var(--rule);background:var(--panel);padding:16px}
+.editor .who{
+  font-size:10px;letter-spacing:.12em;color:var(--dim);margin-bottom:3px;
+}
+.editor .key-no{
+  font-size:15px;color:var(--phos);font-weight:700;margin-bottom:14px;
+}
+.field{margin-bottom:11px}
+.field .cap-lbl{
+  font-size:9px;letter-spacing:.1em;color:var(--dim);
+  display:block;margin-bottom:4px;
+}
+.combo-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.mod-chip{
+  padding:4px 9px;border:1px solid var(--rule);border-radius:2px;
+  font-size:9px;letter-spacing:.06em;color:var(--dim);
+}
+.mod-chip.on{border-color:var(--phos);color:var(--phos);background:#1C2A2A}
+.hint{font-size:9px;color:var(--rule);margin-top:5px;line-height:1.5}
+.empty{color:var(--rule);font-size:11px;text-align:center;padding:28px 0}
+
+footer{
+  margin-top:34px;padding-top:18px;border-top:1px solid var(--rule);
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+}
+footer .sp{flex:1}
+.uid{font-size:10px;color:var(--rule);letter-spacing:.06em}
+
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<header>
+  <div class="brand">
+    <h1>MACROPAD</h1>
+    <span class="spec">5×8 · 3 ENC · SSD1306</span>
+  </div>
+  <div class="link">
+    <div class="status">
+      <span class="dot" id="dot"></span>
+      <span id="stat">未接続</span>
+    </div>
+    <button class="btn primary" id="connect">接続</button>
+    <button class="btn" id="push" disabled>ボードへ送る</button>
+    <button class="btn warn" id="reset" disabled>標準に戻す</button>
+  </div>
+</header>
+
+<div class="notice" id="notice" style="display:none"></div>
+
+<div class="profiles" id="ptabs"></div>
+
+<div class="main">
+  <div>
+    <div class="section-label">キーマトリクス</div>
+    <div class="matrix" id="matrix"></div>
+
+    <div class="section-label">ロータリーエンコーダ</div>
+    <div class="encs" id="encs"></div>
+  </div>
+
+  <aside class="side">
+    <div class="oled-shell">
+      <div class="oled-cap">OLED PREVIEW 128×32</div>
+      <canvas id="oled" width="128" height="32"></canvas>
+    </div>
+    <div class="editor" id="editor"></div>
+  </aside>
+</div>
+
+<footer>
+  <button class="btn" id="export">書き出す</button>
+  <button class="btn" id="import">読み込む</button>
+  <input type="file" id="file" accept=".json" hidden>
+  <span class="sp"></span>
+  <span class="uid" id="uid">UID —</span>
+</footer>
+
+</div>
+
+<script>
+'use strict';
+
+/* ===================================================================
+   キーコード語彙（CircuitPython Keycode 名に一致させること）
+   =================================================================== */
+const KEYS = {
+  '基本': ['ESCAPE','TAB','ENTER','SPACE','BACKSPACE','DELETE','INSERT','HOME','END','PAGE_UP','PAGE_DOWN','CAPS_LOCK','PRINT_SCREEN'],
+  '矢印': ['UP_ARROW','DOWN_ARROW','LEFT_ARROW','RIGHT_ARROW'],
+  '修飾': ['LEFT_SHIFT','RIGHT_SHIFT','LEFT_CONTROL','RIGHT_CONTROL','LEFT_ALT','RIGHT_ALT','LEFT_GUI','RIGHT_GUI'],
+  '英字': 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
+  '数字': ['ZERO','ONE','TWO','THREE','FOUR','FIVE','SIX','SEVEN','EIGHT','NINE'],
+  'テンキー': ['KEYPAD_ZERO','KEYPAD_ONE','KEYPAD_TWO','KEYPAD_THREE','KEYPAD_FOUR','KEYPAD_FIVE','KEYPAD_SIX','KEYPAD_SEVEN','KEYPAD_EIGHT','KEYPAD_NINE','KEYPAD_PERIOD','KEYPAD_ENTER','KEYPAD_PLUS','KEYPAD_MINUS','KEYPAD_ASTERISK','KEYPAD_FORWARD_SLASH','KEYPAD_NUMLOCK'],
+  '記号': ['MINUS','EQUALS','HAT','GRAVE_ACCENT','FORWARD_SLASH','BACKSLASH','PERIOD','COMMA','SEMICOLON','QUOTE','LEFT_BRACKET','RIGHT_BRACKET'],
+  '日本語': ['LANG1','LANG2','INTERNATIONAL4','INTERNATIONAL5','INTERNATIONAL2','INTERNATIONAL1','INTERNATIONAL3'],
+  'F': ['F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12'],
+};
+const MODS = ['LEFT_CONTROL','LEFT_SHIFT','LEFT_ALT','LEFT_GUI'];
+
+/* 表示用の短縮ラベル */
+const SHORT = {
+  ESCAPE:'ESC', BACKSPACE:'BSP', DELETE:'DEL', LEFT_SHIFT:'SHFT', RIGHT_SHIFT:'SHFT',
+  LEFT_CONTROL:'CTRL', RIGHT_CONTROL:'CTRL', LEFT_ALT:'ALT', RIGHT_ALT:'ALT',
+  LEFT_GUI:'GUI', RIGHT_GUI:'GUI', UP_ARROW:'↑', DOWN_ARROW:'↓',
+  LEFT_ARROW:'←', RIGHT_ARROW:'→', PRINT_SCREEN:'PRTSC', CAPS_LOCK:'CAPS',
+  GRAVE_ACCENT:'`', FORWARD_SLASH:'/', KEYPAD_ASTERISK:'*', KEYPAD_PLUS:'+',
+  KEYPAD_MINUS:'-', KEYPAD_ENTER:'⏎', KEYPAD_PERIOD:'.', MINUS:'-', EQUALS:'=',
+  HAT:'^', ZERO:'0', ONE:'1', TWO:'2', THREE:'3', FOUR:'4',
+  FIVE:'5', SIX:'6', SEVEN:'7', EIGHT:'8', NINE:'9',
+  LANG1:'かな', LANG2:'英数',
+  INTERNATIONAL1:'ろ', INTERNATIONAL2:'カナ', INTERNATIONAL3:'¥',
+  INTERNATIONAL4:'変換', INTERNATIONAL5:'無変換',
+};
+for (let i=0;i<10;i++){
+  SHORT['KEYPAD_'+['ZERO','ONE','TWO','THREE','FOUR','FIVE','SIX','SEVEN','EIGHT','NINE'][i]] = String(i);
+}
+const MODSHORT = {LEFT_CONTROL:'C', LEFT_SHIFT:'S', LEFT_ALT:'A', LEFT_GUI:'G'};
+
+const short = n => SHORT[n] || n;
+
+/* ===================================================================
+   標準割り当て（code.py の _default_profiles と一致させること）
+   =================================================================== */
+const PITCH = [0.005,0.01,0.025,0.05,0.1,0.2,0.25,0.5,1,2,2.5,5,10,100];
+
+function baseMap(mod){
+  const K = c => ({t:'key', c});
+  const C = (...k) => ({t:'combo', k});
+  return [
+    K('ESCAPE'), C(mod,'S'), C(mod,'A'), null,
+    null, null, null, K('FORWARD_SLASH'),
+    K('TAB'), K('DELETE'), K('BACKSPACE'), null,
+    K('KEYPAD_SEVEN'), K('KEYPAD_EIGHT'), K('KEYPAD_NINE'), null,
+    {t:'mod',c:'LEFT_SHIFT'}, C(mod,'X'), C(mod,'C'), C(mod,'V'),
+    K('KEYPAD_FOUR'), K('KEYPAD_FIVE'), K('KEYPAD_SIX'), null,
+    {t:'mod',c:'LEFT_ALT'}, null, K('UP_ARROW'), {t:'mod',c:'LEFT_GUI'},
+    K('KEYPAD_ONE'), K('KEYPAD_TWO'), K('KEYPAD_THREE'), null,
+    C(mod,'Z'), K('LEFT_ARROW'), K('DOWN_ARROW'), K('RIGHT_ARROW'),
+    K('KEYPAD_ZERO'), {t:'text',s:'00'}, K('KEYPAD_PERIOD'), K('KEYPAD_ENTER'),
+  ];
+}
+function winMap(){
+  const m = baseMap('LEFT_CONTROL');
+  m[3]={t:'key',c:'HAT'};
+  m[4]={t:'combo',k:['LEFT_SHIFT','EIGHT']};
+  m[5]={t:'combo',k:['LEFT_SHIFT','NINE']};
+  m[6]={t:'combo',k:['LEFT_SHIFT','MINUS']};
+  m[11]={t:'key',c:'GRAVE_ACCENT'};
+  m[15]={t:'key',c:'KEYPAD_ASTERISK'};
+  m[23]={t:'key',c:'KEYPAD_PLUS'};
+  m[25]={t:'key',c:'PRINT_SCREEN'};
+  m[31]={t:'key',c:'MINUS'};
+  return m;
+}
+function macMap(){
+  const m = baseMap('LEFT_GUI');
+  m[3]={t:'combo',k:['LEFT_SHIFT','SIX']};
+  m[4]={t:'combo',k:['LEFT_SHIFT','NINE']};
+  m[5]={t:'combo',k:['LEFT_SHIFT','ZERO']};
+  m[6]={t:'key',c:'HAT'};
+  m[11]={t:'key',c:'LANG2'};                        /* 英数 */
+  m[15]={t:'combo',k:['LEFT_SHIFT','EIGHT']};
+  m[23]={t:'key',c:'MINUS'};
+  m[25]={t:'combo',k:['LEFT_GUI','LEFT_SHIFT','FOUR']};
+  m[27]={t:'key',c:'LANG1'};                        /* かな */
+  m[31]={t:'combo',k:['LEFT_SHIFT','HAT']};
+  return m;
+}
+function defaults(){
+  const cad = (name,km,inv)=>({name, keymap:km, encoders:[
+    {role:'profile'},{role:'pitch',list:[...PITCH]},{role:'feed',invert:inv}]});
+  const edit = (name,km,inv)=>({name, keymap:km, encoders:[
+    {role:'profile'},{role:'scroll'},{role:'wheel',invert:inv}]});
+  return [
+    cad('W-C', winMap(), false),
+    cad('M-C', macMap(), true),
+    edit('W-E', winMap(), false),
+    edit('M-E', macMap(), true),
+    cad('L-C', winMap(), false),
+    edit('L-E', winMap(), false),
+  ];
+}
+
+/* ===================================================================
+   state
+   =================================================================== */
+let profiles = defaults();
+let pi = 0;          // profile index
+let sel = null;      // selected key index
+let uid = null;
+let port = null, reader = null, writer = null;
+let rxbuf = '';
+const pending = [];
+
+const $ = id => document.getElementById(id);
+
+/* ---------- storage ---------- */
+const KEY = u => 'macropad:' + u;
+function save(){
+  if (!uid) return;
+  try { localStorage.setItem(KEY(uid), JSON.stringify(profiles)); }
+  catch(e){ note('保存できません。ブラウザのストレージが一杯か、無効です。'); }
+}
+function load(u){
+  try {
+    const raw = localStorage.getItem(KEY(u));
+    if (!raw) return null;
+    const p = JSON.parse(raw);
+    return Array.isArray(p) && p.length ? p : null;
+  } catch(e){ return null; }
+}
+
+function note(msg, kind){
+  const n = $('notice');
+  if (!msg){ n.style.display='none'; return; }
+  n.style.display='block';
+  n.innerHTML = msg;
+  n.style.borderLeftColor = kind==='err' ? 'var(--red)' : 'var(--amber)';
+}
+
+/* ===================================================================
+   render
+   =================================================================== */
+function actLabel(a){
+  if (!a || a.t==='none') return {lbl:'—', sub:'', on:false};
+  if (a.t==='key')   return {lbl:short(a.c), sub:'', on:true};
+  if (a.t==='mod')   return {lbl:short(a.c), sub:'HOLD', on:true};
+  if (a.t==='text')  return {lbl:'"'+a.s+'"', sub:'TEXT', on:true};
+  if (a.t==='combo'){
+    const ks = a.k||[];
+    const mods = ks.filter(k=>MODS.includes(k)).map(k=>MODSHORT[k]||k[0]).join('');
+    const base = ks.filter(k=>!MODS.includes(k)).map(short).join('+');
+    return {lbl: base || mods, sub: base ? mods : 'MOD', on:true};
+  }
+  return {lbl:'—', sub:'', on:false};
+}
+
+function renderTabs(){
+  const t = $('ptabs');
+  t.innerHTML = '';
+  profiles.forEach((p,i)=>{
+    const b = document.createElement('button');
+    b.className = 'ptab' + (i===pi ? ' on':'');
+    b.textContent = p.name || ('P'+i);
+    b.onclick = ()=>{ pi=i; sel=null; renderAll(); };
+    t.appendChild(b);
+  });
+}
+
+function renderMatrix(){
+  const m = $('matrix');
+  m.innerHTML = '';
+  const km = profiles[pi].keymap || [];
+  for (let i=0;i<40;i++){
+    const {lbl,sub,on} = actLabel(km[i]);
+    const b = document.createElement('button');
+    b.className = 'cap' + (on?' on':'') + (sel===i?' sel':'');
+    b.innerHTML = `<span class="idx">${i}</span>
+      <span class="lbl">${lbl}</span>
+      ${sub?`<span class="sub">${sub}</span>`:''}`;
+    b.onclick = ()=>{ sel=i; renderMatrix(); renderEditor(); };
+    m.appendChild(b);
+  }
+}
+
+const ROLES = [
+  ['none','未使用'],
+  ['profile','プロファイル切替'],
+  ['pitch','ピッチ選択'],
+  ['scroll','スクロール種別'],
+  ['feed','数値送り (CAD)'],
+  ['wheel','スクロール実行'],
+];
+
+function renderEncs(){
+  const wrap = $('encs');
+  wrap.innerHTML = '';
+  const encs = profiles[pi].encoders || [];
+  for (let i=0;i<3;i++){
+    const cfg = encs[i] || {role:'none'};
+    const d = document.createElement('div');
+    d.className = 'enc';
+    const opts = ROLES.map(([v,l])=>
+      `<option value="${v}"${cfg.role===v?' selected':''}>${l}</option>`).join('');
+    const inv = (cfg.role==='feed'||cfg.role==='wheel');
+    const pit = cfg.role==='pitch';
+    d.innerHTML = `
+      <div class="head"><span class="knob"></span><span class="name">E${i+1}</span></div>
+      <select data-e="${i}">${opts}</select>
+      <div class="opt ${inv?'show':''}">
+        <label><input type="checkbox" data-inv="${i}" ${cfg.invert?'checked':''}>回転方向を反転</label>
+      </div>
+      <div class="opt ${pit?'show':''}">
+        <span class="cap-lbl" style="margin-top:9px">ピッチ (カンマ区切り)</span>
+        <input type="text" data-pit="${i}" value="${(cfg.list||PITCH).join(', ')}">
+      </div>`;
+    wrap.appendChild(d);
+  }
+
+  wrap.querySelectorAll('select[data-e]').forEach(s=>{
+    s.onchange = ()=>{
+      const i = +s.dataset.e;
+      const e = profiles[pi].encoders;
+      while (e.length<3) e.push({role:'none'});
+      const role = s.value;
+      const old = e[i] || {};
+      e[i] = {role};
+      if (role==='feed'||role==='wheel') e[i].invert = !!old.invert;
+      if (role==='pitch') e[i].list = old.list || [...PITCH];
+      save(); renderEncs(); drawOled();
+    };
+  });
+  wrap.querySelectorAll('input[data-inv]').forEach(c=>{
+    c.onchange = ()=>{ profiles[pi].encoders[+c.dataset.inv].invert = c.checked; save(); };
+  });
+  wrap.querySelectorAll('input[data-pit]').forEach(t=>{
+    t.onchange = ()=>{
+      const v = t.value.split(',').map(x=>parseFloat(x.trim()))
+                  .filter(x=>!isNaN(x) && x>0);
+      if (v.length){
+        profiles[pi].encoders[+t.dataset.pit].list = v;
+        save(); drawOled();
+      } else {
+        note('ピッチには正の数をカンマ区切りで入れてください。', 'err');
+      }
+    };
+  });
+}
+
+/* ---------- editor ---------- */
+function renderEditor(){
+  const ed = $('editor');
+  if (sel===null){
+    ed.innerHTML = '<div class="empty">キーを選ぶと<br>ここで編集できます</div>';
+    return;
+  }
+  const a = profiles[pi].keymap[sel] || {t:'none'};
+  const t = a.t || 'none';
+  const r = Math.floor(sel/8)+1, c = (sel%8)+1;
+
+  const typeOpts = [
+    ['none','無割当'],['key','単キー'],['mod','押しっぱなし修飾'],
+    ['combo','同時押し'],['text','文字列'],
+  ].map(([v,l])=>`<option value="${v}"${t===v?' selected':''}>${l}</option>`).join('');
+
+  let body = '';
+  if (t==='key' || t==='mod'){
+    body = `<div class="field">
+      <span class="cap-lbl">キーコード</span>
+      ${keySelect(a.c, 'code')}</div>`;
+  } else if (t==='combo'){
+    const ks = a.k || [];
+    const base = ks.find(k=>!MODS.includes(k)) || '';
+    body = `<div class="field">
+        <span class="cap-lbl">修飾</span>
+        <div class="combo-row">${MODS.map(m=>
+          `<button class="mod-chip${ks.includes(m)?' on':''}" data-mod="${m}">${MODSHORT[m]} ${short(m)}</button>`
+        ).join('')}</div>
+      </div>
+      <div class="field">
+        <span class="cap-lbl">キー</span>
+        ${keySelect(base, 'base')}
+      </div>`;
+  } else if (t==='text'){
+    body = `<div class="field">
+      <span class="cap-lbl">文字列</span>
+      <input type="text" id="txt" value="${(a.s||'').replace(/"/g,'&quot;')}">
+      <div class="hint">数字・ピリオド・マイナスのみ送出されます（JIS配列前提）</div></div>`;
+  }
+
+  ed.innerHTML = `
+    <div class="who">R${r} · C${c}</div>
+    <div class="key-no">KEY ${sel}</div>
+    <div class="field">
+      <span class="cap-lbl">種別</span>
+      <select id="atype">${typeOpts}</select>
+    </div>
+    ${body}`;
+
+  $('atype').onchange = e=>{
+    const nt = e.target.value;
+    let na;
+    if (nt==='none') na = null;
+    else if (nt==='key')  na = {t:'key', c:'ESCAPE'};
+    else if (nt==='mod')  na = {t:'mod', c:'LEFT_SHIFT'};
+    else if (nt==='combo')na = {t:'combo', k:['LEFT_CONTROL','C']};
+    else if (nt==='text') na = {t:'text', s:''};
+    profiles[pi].keymap[sel] = na;
+    save(); renderMatrix(); renderEditor();
+  };
+
+  const cs = ed.querySelector('select[data-role=code]');
+  if (cs) cs.onchange = ()=>{
+    profiles[pi].keymap[sel].c = cs.value;
+    save(); renderMatrix();
+  };
+  const bs = ed.querySelector('select[data-role=base]');
+  if (bs) bs.onchange = ()=>{
+    const a2 = profiles[pi].keymap[sel];
+    a2.k = a2.k.filter(k=>MODS.includes(k));
+    if (bs.value) a2.k.push(bs.value);
+    save(); renderMatrix();
+  };
+  ed.querySelectorAll('[data-mod]').forEach(b=>{
+    b.onclick = ()=>{
+      const a2 = profiles[pi].keymap[sel];
+      const m = b.dataset.mod;
+      a2.k = a2.k.includes(m) ? a2.k.filter(k=>k!==m) : [m, ...a2.k];
+      save(); renderMatrix(); renderEditor();
+    };
+  });
+  const tx = $('txt');
+  if (tx) tx.onchange = ()=>{
+    profiles[pi].keymap[sel].s = tx.value;
+    save(); renderMatrix();
+  };
+}
+
+function keySelect(cur, role){
+  let o = '<option value=""></option>';
+  for (const [grp, list] of Object.entries(KEYS)){
+    o += `<optgroup label="${grp}">`;
+    o += list.map(k=>`<option value="${k}"${k===cur?' selected':''}>${k}</option>`).join('');
+    o += '</optgroup>';
+  }
+  return `<select data-role="${role}">${o}</select>`;
+}
+
+/* ---------- OLED preview (signature) ---------- */
+const FONT = {
+  '0':[0x3E,0x51,0x49,0x45,0x3E],'1':[0x00,0x42,0x7F,0x40,0x00],
+  '2':[0x42,0x61,0x51,0x49,0x46],'3':[0x21,0x41,0x45,0x4B,0x31],
+  '4':[0x18,0x14,0x12,0x7F,0x10],'5':[0x27,0x45,0x45,0x45,0x39],
+  '6':[0x3C,0x4A,0x49,0x49,0x30],'7':[0x01,0x71,0x09,0x05,0x03],
+  '8':[0x36,0x49,0x49,0x49,0x36],'9':[0x06,0x49,0x49,0x29,0x1E],
+  'A':[0x7E,0x11,0x11,0x11,0x7E],'C':[0x3E,0x41,0x41,0x41,0x22],
+  'E':[0x7F,0x49,0x49,0x49,0x41],'H':[0x7F,0x08,0x08,0x08,0x7F],
+  'L':[0x7F,0x40,0x40,0x40,0x40],'M':[0x7F,0x02,0x0C,0x02,0x7F],
+  'O':[0x3E,0x41,0x41,0x41,0x3E],'P':[0x7F,0x09,0x09,0x09,0x06],
+  'R':[0x7F,0x09,0x19,0x29,0x46],'S':[0x46,0x49,0x49,0x49,0x31],
+  'U':[0x3F,0x40,0x40,0x40,0x3F],'V':[0x1F,0x20,0x40,0x20,0x1F],
+  'W':[0x3F,0x40,0x38,0x40,0x3F],'-':[0x08,0x08,0x08,0x08,0x08],
+  '.':[0x00,0x60,0x60,0x00,0x00],' ':[0,0,0,0,0],
+  ':':[0x00,0x36,0x36,0x00,0x00],'*':[0x14,0x08,0x3E,0x08,0x14],
+};
+
+function drawOled(){
+  const cv = $('oled'), g = cv.getContext('2d');
+  g.fillStyle = '#000'; g.fillRect(0,0,128,32);
+  g.fillStyle = '#5CE1D2';
+
+  const put = (x,y,s,sz)=>{
+    for (const ch of s.toUpperCase()){
+      const gl = FONT[ch] || FONT[' '];
+      for (let cx=0;cx<5;cx++){
+        for (let cy=0;cy<8;cy++){
+          if (gl[cx] & (1<<cy)) g.fillRect(x+cx*sz, y+cy*sz, sz, sz);
+        }
+      }
+      x += 6*sz;
+    }
+  };
+
+  const p = profiles[pi];
+  const encs = p.encoders || [];
+  const find = r => encs.find(e=>e && e.role===r);
+  const name = p.name || '';
+
+  if (find('scroll')){
+    put(0,0, name+' V-SCR', 1);
+    put(0,14, 'SCROLL', 2);
+  } else if (find('pitch')){
+    const list = find('pitch').list || PITCH;
+    const v = list[Math.min(8, list.length-1)];
+    put(0,0, name+' P:'+v, 1);
+    put(0,14, '0', 2);
+  } else {
+    put(0,0, name, 1);
+    put(0,14, '-', 2);
+  }
+  g.fillRect(125,0,3,3);   // custom marker
+}
+
+function renderAll(){
+  renderTabs(); renderMatrix(); renderEncs(); renderEditor(); drawOled();
+}
+
+/* ===================================================================
+   Web Serial
+   =================================================================== */
+const HAS_SERIAL = 'serial' in navigator;
+
+function setStat(txt, cls){
+  $('stat').textContent = txt;
+  $('dot').className = 'dot' + (cls ? ' '+cls : '');
+}
+function setLive(on){
+  $('push').disabled = !on;
+  $('reset').disabled = !on;
+}
+
+async function send(obj){
+  if (!writer) throw new Error('not connected');
+  await writer.write(new TextEncoder().encode(JSON.stringify(obj)+'\n'));
+}
+function waitReply(ms=2500){
+  return new Promise((res,rej)=>{
+    const t = setTimeout(()=>{
+      const i = pending.indexOf(h);
+      if (i>=0) pending.splice(i,1);
+      rej(new Error('timeout'));
+    }, ms);
+    const h = m => { clearTimeout(t); res(m); };
+    pending.push(h);
+  });
+}
+async function ask(obj, ms){
+  await send(obj);
+  return waitReply(ms);
+}
+
+async function readLoop(){
+  try {
+    while (port && port.readable){
+      const {value, done} = await reader.read();
+      if (done) break;
+      rxbuf += new TextDecoder().decode(value);
+      let nl;
+      while ((nl = rxbuf.indexOf('\n')) >= 0){
+        const line = rxbuf.slice(0,nl).trim();
+        rxbuf = rxbuf.slice(nl+1);
+        if (!line) continue;
+        let msg;
+        try { msg = JSON.parse(line); } catch(e){ continue; }
+        const h = pending.shift();
+        if (h) h(msg);
+      }
+    }
+  } catch(e){ /* 切断時 */ }
+}
+
+async function open(p){
+  port = p;
+  await port.open({baudRate: 115200});
+  reader = port.readable.getReader();
+  writer = port.writable.getWriter();
+  rxbuf = '';
+  readLoop();
+
+  let info;
+  try {
+    info = await ask({cmd:'GET_INFO'});
+  } catch(e){
+    setStat('応答なし', 'err');
+    note('ボードが応答しません。<b>boot.py</b> で <b>usb_cdc.enable(data=True)</b> が有効か、選んだポートが正しいか確認してください。', 'err');
+    await close();
+    return;
+  }
+
+  uid = info.uid;
+  $('uid').textContent = 'UID ' + uid;
+  setStat('接続中', 'live');
+  setLive(true);
+
+  const saved = load(uid);
+  if (saved){
+    profiles = saved;
+    note('このボードの保存済み設定を読み込みました。<b>ボードへ送る</b>で反映します。');
+  } else {
+    profiles = defaults();
+    note('このPCでは初めてのボードです。標準割り当てを表示しています。');
+  }
+  pi = 0; sel = null;
+  renderAll();
+}
+
+async function close(){
+  setLive(false);
+  try { if (reader){ await reader.cancel(); reader.releaseLock(); } } catch(e){}
+  try { if (writer) writer.releaseLock(); } catch(e){}
+  try { if (port) await port.close(); } catch(e){}
+  port = reader = writer = null;
+  setStat('未接続', '');
+}
+
+$('connect').onclick = async ()=>{
+  if (port){ await close(); return; }
+  try {
+    const p = await navigator.serial.requestPort();
+    await open(p);
+  } catch(e){
+    if (e && e.name === 'NotFoundError') return;  // ダイアログを閉じただけ
+    setStat('接続失敗', 'err');
+    note('ポートを開けません。ボードが他のアプリに掴まれていないか確認してください。', 'err');
+  }
+};
+
+$('push').onclick = async ()=>{
+  try {
+    const r = await ask({cmd:'SET_KEYMAP', profiles}, 4000);
+    if (r.ok){
+      save();
+      note('ボードに反映しました。設定はこのPCに保存されています。');
+    } else {
+      note('ボードが設定を受け付けませんでした: ' + (r.err||'不明'), 'err');
+    }
+  } catch(e){
+    note('送信できませんでした。接続を確認してください。', 'err');
+  }
+};
+
+$('reset').onclick = async ()=>{
+  try {
+    await ask({cmd:'RESET'});
+    profiles = defaults();
+    pi = 0; sel = null;
+    save();
+    renderAll();
+    note('標準割り当てに戻しました。');
+  } catch(e){
+    note('送信できませんでした。', 'err');
+  }
+};
+
+/* 差し込み検知（許可済みデバイスのみ） */
+if (HAS_SERIAL){
+  navigator.serial.addEventListener('connect', async e=>{
+    if (port) return;
+    try { await open(e.target || e.port); } catch(err){}
+  });
+  navigator.serial.addEventListener('disconnect', ()=>{
+    if (port) close();
+  });
+  navigator.serial.getPorts().then(ps=>{
+    if (ps.length && !port) open(ps[0]).catch(()=>{});
+  });
+}
+
+/* ---------- export / import ---------- */
+$('export').onclick = ()=>{
+  const blob = new Blob([JSON.stringify({uid, profiles}, null, 2)],
+                        {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'macropad-' + (uid ? uid.slice(0,8) : 'config') + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+$('import').onclick = ()=> $('file').click();
+$('file').onchange = e=>{
+  const f = e.target.files[0];
+  if (!f) return;
+  const rd = new FileReader();
+  rd.onload = ()=>{
+    try {
+      const d = JSON.parse(rd.result);
+      const p = Array.isArray(d) ? d : d.profiles;
+      if (!Array.isArray(p) || !p.length) throw new Error();
+      profiles = p; pi = 0; sel = null;
+      save(); renderAll();
+      note('設定を読み込みました。');
+    } catch(err){
+      note('このファイルは読み込めません。書き出したJSONを選んでください。', 'err');
+    }
+  };
+  rd.readAsText(f);
+  e.target.value = '';
+};
+
+/* ---------- boot ---------- */
+if (!HAS_SERIAL){
+  $('connect').disabled = true;
+  setStat('シリアル非対応', 'err');
+  note('このブラウザは Web Serial に対応していません。<b>Chrome</b> か <b>Edge</b> で、<b>https</b> または <b>localhost</b> から開いてください。'
+     + '（Firefox は非対応。<b>file://</b> でも使えません。）ここでは編集と書き出しのみ行えます。', 'err');
+}
+renderAll();
+</script>
+</body>
+</html>
